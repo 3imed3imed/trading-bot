@@ -1,0 +1,166 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum VerificationTier {
+  A
+  B
+  C
+}
+
+enum Side {
+  BUY
+  SELL
+}
+
+enum OutcomeStatus {
+  WIN
+  LOSS
+  EXPIRED
+  UNKNOWN
+  PENDING
+}
+
+enum ConnectorStatus {
+  SUPPORTED
+  PARTIAL
+  NOT_AVAILABLE
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  role      UserRole @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Source {
+  id                 String           @id @default(cuid())
+  name               String
+  sourceType         String
+  verificationTier   VerificationTier @default(C)
+  historyDays        Int              @default(0)
+  winRate            Float            @default(0)
+  drawdownProxy      Float            @default(0)
+  signalFrequency    Float            @default(0)
+  lastActivity       DateTime?
+  reliabilityScore   Float            @default(0)
+  avgRr              Float            @default(0)
+  consistencyScore   Float            @default(0)
+  connectorStatus    ConnectorStatus  @default(SUPPORTED)
+  connectorReason    String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  signals            Signal[]
+}
+
+model Signal {
+  id                 String           @id @default(cuid())
+  sourceId           String
+  source             Source           @relation(fields: [sourceId], references: [id])
+  assetClass         String
+  symbol             String
+  canonicalSymbol    String
+  timeframe          String
+  side               Side
+  createdAt          DateTime
+  entry              Float
+  stopLoss           Float
+  takeProfit         Float
+  confidenceRaw      Float
+  confidenceScore    Float            @default(0)
+  verificationTier   VerificationTier
+  rawPayload         Json
+  rawPayloadHash     String
+  dedupKey           String
+  isDuplicate        Boolean          @default(false)
+  ingestedAt         DateTime         @default(now())
+  outcomes           SignalOutcome[]
+
+  @@index([symbol, timeframe, createdAt])
+  @@index([sourceId, symbol, timeframe, side, createdAt])
+}
+
+model SignalOutcome {
+  id           String        @id @default(cuid())
+  signalId     String        @unique
+  signal       Signal        @relation(fields: [signalId], references: [id])
+  status       OutcomeStatus @default(PENDING)
+  resolvedAt   DateTime?
+  mfe          Float?
+  mae          Float?
+  rMultiple    Float?
+  expiryAt     DateTime
+  notes        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model ConsensusSnapshot {
+  id           String   @id @default(cuid())
+  symbol       String
+  timeframe    String
+  buyWeight    Float
+  sellWeight   Float
+  buyPct       Float
+  label        String
+  riskLabel    String
+  confidence   Float
+  explainJson  Json
+  createdAt    DateTime @default(now())
+
+  @@index([symbol, timeframe, createdAt])
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  actor        String?
+  eventType    String
+  payload      Json
+  createdAt    DateTime @default(now())
+}
+
+model ConnectorCredential {
+  id           String   @id @default(cuid())
+  sourceId     String?
+  keyId        String
+  encrypted    String
+  createdAt    DateTime @default(now())
+}
+
+model PriceCandle {
+  id           String   @id @default(cuid())
+  symbol       String
+  timeframe    String
+  openTime     DateTime
+  open         Float
+  high         Float
+  low          Float
+  close        Float
+  volume       Float
+
+  @@unique([symbol, timeframe, openTime])
+}
+
+model IngestionEvent {
+  id             String   @id @default(cuid())
+  connector      String
+  status         String
+  error          String?
+  dedupKey       String?
+  payloadHash    String?
+  attempts       Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}

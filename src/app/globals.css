@@ -1,0 +1,9 @@
+:root { color-scheme: dark; }
+body { font-family: Arial, sans-serif; margin: 0; background: #0d1117; color: #e6edf3; }
+a { color: #58a6ff; text-decoration: none; margin-right: 12px; }
+.container { padding: 20px; }
+.card { border: 1px solid #30363d; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+table { width: 100%; border-collapse: collapse; }
+th, td { border-bottom: 1px solid #30363d; padding: 8px; text-align: left; }
+.badge { padding: 3px 6px; border-radius: 999px; font-size: 12px; background: #1f6feb; }
+.disclaimer { font-size: 12px; opacity: 0.8; }
