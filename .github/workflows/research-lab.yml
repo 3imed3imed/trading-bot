@@ -2,6 +2,13 @@ name: Microcap AI Research Lab
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "config/**"
+      - ".github/workflows/research-lab.yml"
   schedule:
     - cron: "17 22 * * 1-5"
 
