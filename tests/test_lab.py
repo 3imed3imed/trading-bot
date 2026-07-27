@@ -1,7 +1,9 @@
+import io
 import json
 import pathlib
 import sys
 import unittest
+import zipfile
 from datetime import datetime
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -26,6 +28,18 @@ class ScientificSafetyTests(unittest.TestCase):
         known = datetime.fromisoformat("2024-01-01T14:30:00+00:00")
         decision = datetime.fromisoformat("2024-01-01T14:29:59+00:00")
         self.assertFalse(known <= decision)
+
+    def test_ftd_parser_preserves_point_in_time_fields(self):
+        payload = io.BytesIO()
+        with zipfile.ZipFile(payload, "w") as archive:
+            archive.writestr("sample.txt", "SETTLEMENT DATE|CUSIP|SYMBOL|QUANTITY (FAILS)|DESCRIPTION|PRICE\n20260701|123456789|TEST|1200|TEST CO|4.25\n")
+        row = lab.parse_ftd_zip(payload.getvalue())[0]
+        self.assertEqual(row["symbol"], "TEST")
+        self.assertEqual(row["fails"], 1200)
+        self.assertEqual(row["prior_close_reference"], 4.25)
+
+    def test_ftd_is_not_mislabeled_short_interest(self):
+        self.assertNotIn("short_interest", lab.parse_ftd_zip.__name__)
 
 
 if __name__ == "__main__":
