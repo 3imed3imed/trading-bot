@@ -2,13 +2,6 @@ name: Microcap AI Research Lab
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "src/**"
-      - "tests/**"
-      - "config/**"
-      - ".github/workflows/research-lab.yml"
   schedule:
     - cron: "17 22 * * 1-5"
 
@@ -17,17 +10,17 @@ permissions:
 
 concurrency:
   group: microcap-research-lab
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   validate-and-research:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Safety tests
@@ -45,7 +38,7 @@ jobs:
           git commit -m "data: autonomous point-in-time evidence snapshot"
           git push
       - name: Preserve reproducibility manifest
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: research-manifest-${{ github.run_id }}
           path: docs/data/latest.json
