@@ -10,6 +10,7 @@ import os
 import pathlib
 import re
 import statistics
+import time
 import urllib.parse
 import urllib.request
 import zipfile
@@ -21,7 +22,7 @@ from typing import Any
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs" / "data"
 STATE = ROOT / "state"
-UA = "MicrocapAIResearchLab/1.1 https://github.com/3imed3imed/trading-bot"
+UA = "MicrocapAIResearchLab/1.1 135290796+3imed3imed@users.noreply.github.com"
 TARGET_FORMS = {"8-K", "10-Q", "10-K", "6-K", "S-1", "S-3", "424B3", "424B4", "424B5", "DEF 14A", "4", "SC 13D", "SC 13G"}
 
 @dataclass(frozen=True)
@@ -41,8 +42,16 @@ def now() -> str:
 
 def fetch(url: str) -> bytes:
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Encoding": "identity"})
-    with urllib.request.urlopen(req, timeout=45) as response:
-        return response.read()
+    last_error: Exception | None = None
+    for attempt in range(4):
+        try:
+            time.sleep(0.25 * (2 ** attempt))
+            with urllib.request.urlopen(req, timeout=45) as response:
+                return response.read()
+        except Exception as exc:
+            last_error = exc
+    assert last_error is not None
+    raise last_error
 
 
 def digest(payload: bytes) -> str:
