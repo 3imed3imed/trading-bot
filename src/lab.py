@@ -8,8 +8,12 @@ import io
 import json
 import os
 import pathlib
+import re
 import statistics
+import urllib.parse
 import urllib.request
+import zipfile
+import xml.etree.ElementTree as ET
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from typing import Any
@@ -17,7 +21,8 @@ from typing import Any
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs" / "data"
 STATE = ROOT / "state"
-UA = "MicrocapAIResearchLab/1.0 research-contact@example.invalid"
+UA = "MicrocapAIResearchLab/1.1 https://github.com/3imed3imed/trading-bot"
+TARGET_FORMS = {"8-K", "10-Q", "10-K", "6-K", "S-1", "S-3", "424B3", "424B4", "424B5", "DEF 14A", "4", "SC 13D", "SC 13G"}
 
 @dataclass(frozen=True)
 class Evidence:
@@ -78,7 +83,7 @@ def collect_universe() -> tuple[list[dict[str, Any]], list[Evidence]]:
     return securities, evidence
 
 
-def sec_health() -> Evidence:
+def sec_company_index() -> Evidence:
     url = "https://www.sec.gov/files/company_tickers.json"
     observed = now()
     try:
@@ -87,6 +92,77 @@ def sec_health() -> Evidence:
         return Evidence("sec_company_index", "PASS", "SEC company index reachable and parseable", url, digest(raw), observed, len(data))
     except Exception as exc:
         return Evidence("sec_company_index", "BLOCKED", f"Collection error: {type(exc).__name__}", url, observed_at=observed)
+
+
+def collect_recent_filings() -> tuple[list[dict[str, str]], Evidence]:
+    url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&output=atom&count=100"
+    observed = now()
+    try:
+        raw = fetch(url)
+        root = ET.fromstring(raw)
+        ns = {"a": "http://www.w3.org/2005/Atom"}
+        filings: list[dict[str, str]] = []
+        for entry in root.findall("a:entry", ns):
+            title = entry.findtext("a:title", default="", namespaces=ns)
+            form = title.split(" - ", 1)[0].strip()
+            if form not in TARGET_FORMS:
+                continue
+            link = entry.find("a:link", ns)
+            filings.append({
+                "form": form,
+                "title": title,
+                "accepted_or_updated": entry.findtext("a:updated", default="", namespaces=ns),
+                "url": link.attrib.get("href", "") if link is not None else "",
+                "known_time": observed,
+            })
+        return filings, Evidence("sec_recent_filings", "PASS", "Exact SEC feed timestamps captured for monitored forms", url, digest(raw), observed, len(filings))
+    except Exception as exc:
+        return [], Evidence("sec_recent_filings", "BLOCKED", f"Collection error: {type(exc).__name__}", url, observed_at=observed)
+
+
+def parse_ftd_zip(payload: bytes) -> list[dict[str, Any]]:
+    with zipfile.ZipFile(io.BytesIO(payload)) as archive:
+        names = [n for n in archive.namelist() if not n.endswith("/")]
+        if not names:
+            return []
+        raw = archive.read(names[0]).decode("utf-8", errors="replace")
+    rows = csv.DictReader(io.StringIO(raw), delimiter="|")
+    parsed: list[dict[str, Any]] = []
+    for row in rows:
+        price_text = row.get("PRICE", ".")
+        try:
+            price = float(price_text)
+        except (TypeError, ValueError):
+            price = None
+        parsed.append({
+            "settlement_date": row.get("SETTLEMENT DATE", ""),
+            "cusip": row.get("CUSIP", ""),
+            "symbol": row.get("SYMBOL", ""),
+            "fails": int(row.get("QUANTITY (FAILS)", "0") or 0),
+            "description": row.get("DESCRIPTION", ""),
+            "prior_close_reference": price,
+        })
+    return parsed
+
+
+def collect_latest_ftd() -> tuple[list[dict[str, Any]], Evidence]:
+    page_url = "https://www.sec.gov/data-research/sec-markets-data/fails-deliver-data"
+    observed = now()
+    try:
+        page = fetch(page_url)
+        matches = re.findall(rb'href=["\']([^"\']*cnsfails(\d{6}[ab])\.zip)["\']', page, flags=re.I)
+        if not matches:
+            raise ValueError("No FTD archive links found")
+        href, _ = max(matches, key=lambda item: item[1].lower())
+        zip_url = urllib.parse.urljoin(page_url, href.decode("utf-8"))
+        raw = fetch(zip_url)
+        rows = parse_ftd_zip(raw)
+        for row in rows:
+            row["known_time"] = observed
+            row["source"] = zip_url
+        return rows, Evidence("sec_fails_to_deliver", "PASS", "Latest official aggregate FTD archive collected; FTD is not treated as short interest", zip_url, digest(raw), observed, len(rows))
+    except Exception as exc:
+        return [], Evidence("sec_fails_to_deliver", "BLOCKED", f"Collection error: {type(exc).__name__}", page_url, observed_at=observed)
 
 
 def statistical_gates(returns: list[float]) -> list[Evidence]:
@@ -108,7 +184,9 @@ def run() -> dict[str, Any]:
     STATE.mkdir(parents=True, exist_ok=True)
     policy = json.loads((ROOT / "config" / "acceptance-policy.json").read_text(encoding="utf-8"))
     universe, evidence = collect_universe()
-    evidence.append(sec_health())
+    filings, filings_evidence = collect_recent_filings()
+    ftd, ftd_evidence = collect_latest_ftd()
+    evidence.extend([sec_company_index(), filings_evidence, ftd_evidence])
     evidence.extend([
         Evidence("minute_trades_quotes", "BLOCKED", "Complete historical consolidated minute trades/quotes are not available from a configured lawful free source"),
         Evidence("historical_news", "BLOCKED", "Complete original, unrevised historical news bodies are not available from a configured lawful free source"),
@@ -119,25 +197,28 @@ def run() -> dict[str, Any]:
     evidence.extend(statistical_gates([]))
     evidence.append(critic(evidence))
     status = "PASS" if all(e.status == "PASS" for e in evidence) else "REJECTED"
-    commit = os.getenv("GITHUB_SHA", "unknown")
     manifest = {
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "run_id": os.getenv("GITHUB_RUN_ID", "manual-cloud-run"),
         "generated_at": now(),
-        "code_commit": commit,
+        "code_commit": os.getenv("GITHUB_SHA", "unknown"),
         "policy_hash": digest(json.dumps(policy, sort_keys=True).encode()),
         "status": status,
         "live_execution_enabled": False,
         "universe_rows_current": len(universe),
+        "recent_target_filings": len(filings),
+        "latest_ftd_rows": len(ftd),
+        "sub5_ftd_reference_rows": sum(1 for r in ftd if r["prior_close_reference"] is not None and r["prior_close_reference"] < 5),
         "evidence": [asdict(e) for e in evidence],
         "opportunities": [],
         "message": "No opportunities published: scientific acceptance gates did not pass." if status != "PASS" else "All gates passed."
     }
     (OUT / "latest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    snapshot = {"observed_at": now(), "securities": universe}
-    (STATE / f"universe-{stamp}.json").write_text(json.dumps(snapshot, separators=(",", ":")), encoding="utf-8")
-    print(json.dumps({"status": status, "universe": len(universe), "opportunities": 0}))
+    (STATE / f"universe-{stamp}.json").write_text(json.dumps({"observed_at": now(), "securities": universe}, separators=(",", ":")), encoding="utf-8")
+    regulatory = {"observed_at": now(), "recent_filings": filings, "latest_ftd": ftd}
+    (STATE / f"regulatory-{stamp}.json").write_text(json.dumps(regulatory, separators=(",", ":")), encoding="utf-8")
+    print(json.dumps({"status": status, "universe": len(universe), "filings": len(filings), "ftd": len(ftd), "opportunities": 0}))
     return manifest
 
 
