@@ -1,0 +1,122 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "30313302124",
+  "generated_at": "2026-07-27T23:11:09.100358+00:00",
+  "code_commit": "f85c8c71023eff816b4bf137a8b063fae6239547",
+  "policy_hash": "4fa1b63b8f4b34b5a689fcec7e6d6f218b16dc74a89221a9f443a5f91a871077",
+  "status": "REJECTED",
+  "live_execution_enabled": false,
+  "universe_rows_current": 6543,
+  "evidence": [
+    {
+      "stage": "universe_current_snapshot",
+      "status": "PASS",
+      "reason": "Authoritative current listing snapshot collected",
+      "source": "https://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt",
+      "content_hash": "b1b018c7c6fffce98e8e599d8e2d94f6e0589fa675ab01810fd0ca16f69af464",
+      "observed_at": "2026-07-27T23:11:08.030459+00:00",
+      "rows": 5567
+    },
+    {
+      "stage": "universe_current_snapshot",
+      "status": "PASS",
+      "reason": "Authoritative current listing snapshot collected",
+      "source": "https://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt",
+      "content_hash": "071253911bbcd4faf5de4087c24014d82c0b67754d1dc88c760cc49c725968d7",
+      "observed_at": "2026-07-27T23:11:08.030459+00:00",
+      "rows": 7495
+    },
+    {
+      "stage": "point_in_time_universe",
+      "status": "BLOCKED",
+      "reason": "Current snapshots accumulate prospectively, but free sources do not provide complete historical constituents and delisted securities",
+      "source": null,
+      "content_hash": null,
+      "observed_at": null,
+      "rows": null
+    },
+    {
+      "stage": "delisted_security_coverage",
+      "status": "BLOCKED",
+      "reason": "No complete authoritative free delisted-security master is configured",
+      "source": null,
+      "content_hash": null,
+      "observed_at": null,
+      "rows": null
+    },
+    {
+      "stage": "sec_company_index",
+      "status": "PASS",
+      "reason": "SEC company index reachable and parseable",
+      "source": "https://www.sec.gov/files/company_tickers.json",
+      "content_hash": "0ca03630819cec78bcdddd494732fec48a90b11a44305fa031e5353dc91d8775",
+      "observed_at": "2026-07-27T23:11:08.776949+00:00",
+      "rows": 10426
+    },
+    {
+      "stage": "minute_trades_quotes",
+      "status": "BLOCKED",
+      "reason": "Complete historical consolidated minute trades/quotes are not available from a configured lawful free source",
+      "source": null,
+      "content_hash": null,
+      "observed_at": null,
+      "rows": null
+    },
+    {
+      "stage": "historical_news",
+      "status": "BLOCKED",
+      "reason": "Complete original, unrevised historical news bodies are not available from a configured lawful free source",
+      "source": null,
+      "content_hash": null,
+      "observed_at": null,
+      "rows": null
+    },
+    {
+      "stage": "execution_model",
+      "status": "BLOCKED",
+      "reason": "Bid/ask and order-book evidence required for realistic fills is unavailable",
+      "source": null,
+      "content_hash": null,
+      "observed_at": null,
+      "rows": null
+    },
+    {
+      "stage": "model_discovery",
+      "status": "BLOCKED",
+      "reason": "Model search prohibited until upstream point-in-time data gates pass",
+      "source": null,
+      "content_hash": null,
+      "observed_at": null,
+      "rows": null
+    },
+    {
+      "stage": "paper_trading_pass",
+      "status": "BLOCKED",
+      "reason": "No scientifically accepted model exists",
+      "source": null,
+      "content_hash": null,
+      "observed_at": null,
+      "rows": null
+    },
+    {
+      "stage": "sufficient_sample",
+      "status": "REJECTED",
+      "reason": "Need at least 500 locked OOS trades; received 0",
+      "source": null,
+      "content_hash": null,
+      "observed_at": null,
+      "rows": null
+    },
+    {
+      "stage": "critic_approval",
+      "status": "REJECTED",
+      "reason": "Mandatory evidence failed: delisted_security_coverage, execution_model, historical_news, minute_trades_quotes, model_discovery, paper_trading_pass, point_in_time_universe, sufficient_sample",
+      "source": null,
+      "content_hash": null,
+      "observed_at": null,
+      "rows": null
+    }
+  ],
+  "opportunities": [],
+  "message": "No opportunities published: scientific acceptance gates did not pass."
+}
