@@ -40,15 +40,29 @@ jobs:
         run: python src/public_scan.py --output docs/data/public-scan.json
       - name: Execute end-to-end market adapter smoke path
         run: python src/production_run.py --fixture fixtures/alpaca_iex_snapshot.json --output docs/data/production-smoke.json
-      - name: Execute live IEX scan when broker data secrets exist
+      - name: Verify Alpaca paper account and execute live IEX scan
         env:
           APCA_API_KEY_ID: ${{ secrets.APCA_API_KEY_ID }}
           APCA_API_SECRET_KEY: ${{ secrets.APCA_API_SECRET_KEY }}
         run: |
           if [ -n "$APCA_API_KEY_ID" ] && [ -n "$APCA_API_SECRET_KEY" ]; then
+            python src/paper_health.py --output docs/data/paper-account.json
             python src/production_run.py --output docs/data/live-scan.json
           else
-            echo "Live IEX scan blocked: cloud broker data secrets are not configured."
+            python - <<'PY'
+          import json
+          from datetime import datetime, timezone
+          from pathlib import Path
+          Path("docs/data/paper-account.json").write_text(json.dumps({
+              "schema_version": "1.0.0",
+              "generated_at": datetime.now(timezone.utc).isoformat(),
+              "mode": "ALPACA_PAPER_ACCOUNT",
+              "connection": "BLOCKED",
+              "reason": "GitHub Actions paper credentials are not configured",
+              "orders_submitted": 0,
+              "live_trading_enabled": False
+          }, indent=2), encoding="utf-8")
+          PY
           fi
       - name: Publish versioned evidence snapshot
         run: |
