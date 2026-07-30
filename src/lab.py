@@ -19,6 +19,8 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from typing import Any
 
+from performance import summarize
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs" / "data"
 STATE = ROOT / "state"
@@ -174,6 +176,24 @@ def collect_latest_ftd() -> tuple[list[dict[str, Any]], Evidence]:
         return [], Evidence("sec_fails_to_deliver", "BLOCKED", f"Collection error: {type(exc).__name__}", page_url, observed_at=observed)
 
 
+
+def detect_universe_changes(current: list[dict[str, Any]]) -> dict[str, Any]:
+    snapshots = sorted(STATE.glob("universe-*.json"))
+    current_map = {row["symbol"]: row for row in current}
+    if not snapshots:
+        return {"status": "BASELINE", "previous_snapshot": None, "added": [], "removed": []}
+    previous_path = snapshots[-1]
+    previous = json.loads(previous_path.read_text(encoding="utf-8")).get("securities", [])
+    previous_map = {row["symbol"]: row for row in previous}
+    added_symbols = sorted(current_map.keys() - previous_map.keys())
+    removed_symbols = sorted(previous_map.keys() - current_map.keys())
+    return {
+        "status": "COMPARED",
+        "previous_snapshot": previous_path.name,
+        "added": [current_map[symbol] for symbol in added_symbols],
+        "removed": [previous_map[symbol] for symbol in removed_symbols],
+    }
+
 def statistical_gates(returns: list[float]) -> list[Evidence]:
     if len(returns) < 500:
         return [Evidence("sufficient_sample", "REJECTED", f"Need at least 500 locked OOS trades; received {len(returns)}")]
@@ -193,6 +213,9 @@ def run() -> dict[str, Any]:
     STATE.mkdir(parents=True, exist_ok=True)
     policy = json.loads((ROOT / "config" / "acceptance-policy.json").read_text(encoding="utf-8"))
     universe, evidence = collect_universe()
+    changes = detect_universe_changes(universe)
+    evidence.append(Evidence("prospective_universe_changes", "PASS", f"Compared snapshots: {len(changes['added'])} additions and {len(changes['removed'])} removals"))
+    paper_metrics = summarize([], starting_equity=100.0, minimum_sample=policy["minimum_oos_trades"])
     filings, filings_evidence = collect_recent_filings()
     ftd, ftd_evidence = collect_latest_ftd()
     evidence.extend([sec_company_index(), filings_evidence, ftd_evidence])
@@ -218,6 +241,9 @@ def run() -> dict[str, Any]:
         "recent_target_filings": len(filings),
         "latest_ftd_rows": len(ftd),
         "sub5_ftd_reference_rows": sum(1 for r in ftd if r["prior_close_reference"] is not None and r["prior_close_reference"] < 5),
+        "universe_additions": len(changes["added"]),
+        "universe_removals": len(changes["removed"]),
+        "paper_performance": paper_metrics,
         "evidence": [asdict(e) for e in evidence],
         "opportunities": [],
         "message": "No opportunities published: scientific acceptance gates did not pass." if status != "PASS" else "All gates passed."
@@ -227,6 +253,7 @@ def run() -> dict[str, Any]:
     (STATE / f"universe-{stamp}.json").write_text(json.dumps({"observed_at": now(), "securities": universe}, separators=(",", ":")), encoding="utf-8")
     regulatory = {"observed_at": now(), "recent_filings": filings, "latest_ftd": ftd}
     (STATE / f"regulatory-{stamp}.json").write_text(json.dumps(regulatory, separators=(",", ":")), encoding="utf-8")
+    (STATE / f"listing-events-{stamp}.json").write_text(json.dumps({"observed_at": now(), **changes}, separators=(",", ":")), encoding="utf-8")
     print(json.dumps({"status": status, "universe": len(universe), "filings": len(filings), "ftd": len(ftd), "opportunities": 0}))
     return manifest
 
