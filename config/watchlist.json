@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0.0",
+  "feed": "iex",
+  "symbols": ["SNDL"],
+  "price_ceiling": 5.0,
+  "minimum_price": 0.10,
+  "minimum_minute_volume": 1000,
+  "maximum_spread_bps": 250,
+  "momentum_candidate_threshold": 0.03,
+  "order_quantity": 1,
+  "maximum_participation": 0.02,
+  "live_orders_enabled": false
+}
