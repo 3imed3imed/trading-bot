@@ -1,0 +1,16 @@
+{
+  "snapshots": {
+    "SNDL": {
+      "latest_trade": {"timestamp": "2026-07-29T19:59:55.189432+00:00", "price": 1.195, "size": 350},
+      "latest_quote": {"timestamp": "2026-07-29T20:01:00.072667+00:00", "bid_price": 1.18, "bid_size": 600, "ask_price": 1.2, "ask_size": 600},
+      "minute_bar": {"timestamp": "2026-07-29T19:59:00+00:00", "close": 1.195, "volume": 3266},
+      "daily_bar": {"timestamp": "2026-07-29T04:00:00+00:00", "close": 1.195, "volume": 107357},
+      "previous_daily_bar": {"timestamp": "2026-07-28T04:00:00+00:00", "close": 1.21, "volume": 125311}
+    }
+  },
+  "provenance": {
+    "provider": "Alpaca",
+    "feed": "IEX",
+    "purpose": "contract and pipeline smoke test only; never used as current trading data"
+  }
+}
