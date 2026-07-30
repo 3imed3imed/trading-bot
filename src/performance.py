@@ -1,4 +1,4 @@
-"""Deterministic performance statistics for locked OOS and paper trades."""
+"""Deterministic, cost-inclusive performance statistics for locked OOS and paper trades."""
 from __future__ import annotations
 
 import math
