@@ -1,6 +1,5 @@
 name: Microcap AI Research Lab
 
-# Manual cloud run request: 2026-07-30T07:25:00Z
 on:
   workflow_dispatch:
   push:
@@ -37,6 +36,8 @@ jobs:
         env:
           PYTHONDONTWRITEBYTECODE: "1"
         run: python src/lab.py
+      - name: Run credential-free current-market observation scan
+        run: python src/public_scan.py --output docs/data/public-scan.json
       - name: Execute end-to-end market adapter smoke path
         run: python src/production_run.py --fixture fixtures/alpaca_iex_snapshot.json --output docs/data/production-smoke.json
       - name: Execute live IEX scan when broker data secrets exist
@@ -53,7 +54,7 @@ jobs:
         run: |
           git config user.name "microcap-research-lab[bot]"
           git config user.email "microcap-research-lab[bot]@users.noreply.github.com"
-          git add docs/data/latest.json docs/data/production-smoke.json docs/data/live-scan.json state/ 2>/dev/null || git add docs/data/latest.json docs/data/production-smoke.json state/
+          git add docs/data/*.json state/
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "data: autonomous point-in-time evidence snapshot"
           git pull --rebase origin main
