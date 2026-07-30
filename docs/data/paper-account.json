@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-07-30T07:55:41.257174+00:00",
-  "mode": "ALPACA_PAPER_ACCOUNT",
+  "generated_at": "2026-07-30T08:03:09.962744+00:00",
+  "mode": "IBKR_PAPER_SESSION",
   "connection": "BLOCKED",
-  "reason": "GitHub Actions paper credentials are not configured",
+  "reason": "An authenticated HTTPS IBKR Client Portal Gateway is not configured",
   "orders_submitted": 0,
   "live_trading_enabled": false
 }
