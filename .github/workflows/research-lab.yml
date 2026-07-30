@@ -1,5 +1,6 @@
 name: Microcap AI Research Lab
 
+# Manual cloud run request: 2026-07-30T07:13:00Z
 on:
   workflow_dispatch:
   push:
