@@ -11,6 +11,12 @@ from datetime import datetime, timezone
 from typing import Any
 
 SCREENER_URL = "https://api.nasdaq.com/api/screener/stocks"
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (compatible; MicrocapAIResearchLab/1.0; +https://github.com/3imed3imed/trading-bot)",
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Referer": "https://www.nasdaq.com/market-activity/stocks/screener",
+}
 
 
 @dataclass(frozen=True)
@@ -65,29 +71,38 @@ def parse_screener(payload: dict[str, Any], observed_at: str | None = None) -> l
     return parsed
 
 
-def fetch_current_market(limit: int = 10000) -> tuple[list[PublicMarketRow], bytes]:
-    query = urllib.parse.urlencode({"tableonly": "true", "limit": str(limit), "offset": "0", "download": "true"})
-    request = urllib.request.Request(
-        f"{SCREENER_URL}?{query}",
-        headers={
-            "User-Agent": "Mozilla/5.0 (compatible; MicrocapAIResearchLab/1.0; +https://github.com/3imed3imed/trading-bot)",
-            "Accept": "application/json, text/plain, */*",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Referer": "https://www.nasdaq.com/market-activity/stocks/screener",
-        },
-    )
+def _fetch_page(offset: int, page_size: int) -> tuple[dict[str, Any], bytes]:
+    query = urllib.parse.urlencode({"tableonly": "true", "limit": str(page_size), "offset": str(offset)})
+    request = urllib.request.Request(f"{SCREENER_URL}?{query}", headers=HEADERS)
     last_error: Exception | None = None
-    for attempt in range(3):
+    for attempt in range(2):
         try:
             if attempt:
-                time.sleep(2 ** attempt)
-            with urllib.request.urlopen(request, timeout=45) as response:
+                time.sleep(2)
+            with urllib.request.urlopen(request, timeout=25) as response:
                 raw = response.read()
-            rows = parse_screener(json.loads(raw))
-            if not rows:
-                raise ValueError("Nasdaq screener returned no parseable rows")
-            return rows, raw
+            return json.loads(raw), raw
         except Exception as exc:
             last_error = exc
     assert last_error is not None
     raise last_error
+
+
+def fetch_current_market(limit: int = 10000, page_size: int = 1000) -> tuple[list[PublicMarketRow], bytes]:
+    observed = datetime.now(timezone.utc).isoformat()
+    rows_by_symbol: dict[str, PublicMarketRow] = {}
+    page_hash_material: list[bytes] = []
+    for offset in range(0, limit, page_size):
+        payload, raw = _fetch_page(offset, page_size)
+        page_hash_material.append(raw)
+        page = parse_screener(payload, observed)
+        for row in page:
+            rows_by_symbol[row.symbol] = row
+        raw_count = len((((payload.get("data") or {}).get("table") or {}).get("rows") or []))
+        total_value = _number((payload.get("data") or {}).get("totalrecords"))
+        if raw_count < page_size or (total_value is not None and offset + page_size >= int(total_value)):
+            break
+        time.sleep(0.25)
+    if not rows_by_symbol:
+        raise ValueError("Nasdaq screener returned no parseable rows")
+    return list(rows_by_symbol.values()), b"\n".join(page_hash_material)
