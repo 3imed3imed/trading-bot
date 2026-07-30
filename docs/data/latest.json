@@ -1,8 +1,8 @@
 {
   "schema_version": "1.1.0",
-  "run_id": "30523416031",
-  "generated_at": "2026-07-30T07:35:14.565274+00:00",
-  "code_commit": "c947a2d2e3c23c1ed64786381b7221efeb2632ba",
+  "run_id": "30524537524",
+  "generated_at": "2026-07-30T07:54:48.736261+00:00",
+  "code_commit": "16aeb9e2e3e07525752749dadb928b833055b793",
   "policy_hash": "4fa1b63b8f4b34b5a689fcec7e6d6f218b16dc74a89221a9f443a5f91a871077",
   "status": "REJECTED",
   "live_execution_enabled": false,
@@ -37,7 +37,7 @@
       "reason": "Authoritative current listing snapshot collected",
       "source": "https://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt",
       "content_hash": "61d8f06259e3cdd34bffa4b472c0b065c6086e26533c21fe9499ab2998289186",
-      "observed_at": "2026-07-30T07:35:01.225080+00:00",
+      "observed_at": "2026-07-30T07:54:35.770084+00:00",
       "rows": 5554
     },
     {
@@ -46,7 +46,7 @@
       "reason": "Authoritative current listing snapshot collected",
       "source": "https://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt",
       "content_hash": "612f2aebac88bc48c100c60c242782be72672caf93efb39e4fb66163f69b5756",
-      "observed_at": "2026-07-30T07:35:01.225080+00:00",
+      "observed_at": "2026-07-30T07:54:35.770084+00:00",
       "rows": 7515
     },
     {
@@ -82,7 +82,7 @@
       "reason": "Collection error: HTTPError",
       "source": "https://www.sec.gov/files/company_tickers.json",
       "content_hash": null,
-      "observed_at": "2026-07-30T07:35:10.729607+00:00",
+      "observed_at": "2026-07-30T07:54:44.860205+00:00",
       "rows": null
     },
     {
@@ -91,7 +91,7 @@
       "reason": "Collection error: HTTPError",
       "source": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&output=atom&count=100",
       "content_hash": null,
-      "observed_at": "2026-07-30T07:35:03.067851+00:00",
+      "observed_at": "2026-07-30T07:54:36.980188+00:00",
       "rows": null
     },
     {
@@ -100,7 +100,7 @@
       "reason": "Collection error: HTTPError",
       "source": "https://www.sec.gov/data-research/sec-markets-data/fails-deliver-data",
       "content_hash": null,
-      "observed_at": "2026-07-30T07:35:06.907156+00:00",
+      "observed_at": "2026-07-30T07:54:40.977431+00:00",
       "rows": null
     },
     {

@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-07-30T07:55:41.257174+00:00",
+  "mode": "ALPACA_PAPER_ACCOUNT",
+  "connection": "BLOCKED",
+  "reason": "GitHub Actions paper credentials are not configured",
+  "orders_submitted": 0,
+  "live_trading_enabled": false
+}
