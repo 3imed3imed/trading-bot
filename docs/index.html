@@ -6,4 +6,28 @@
 <section><h2>Scientific decision</h2><p id="message">Loading signed run manifest…</p></section>
 <section><h2>Acceptance evidence</h2><table><thead><tr><th>Gate</th><th>Status</th><th>Evidence / rejection reason</th></tr></thead><tbody id="gates"></tbody></table></section>
 <section><h2>Opportunities</h2><p id="none">None. The system will not manufacture signals when mandatory evidence is unavailable.</p></section>
-<script>fetch('./data/latest.json',{cache:'no-store'}).then(r=>r.json()).then(x=>{status.textContent=x.status;rows.textContent=x.universe_rows_current;opps.textContent=x.opportunities.length;filings.textContent=x.recent_target_filings??"—";ftd.textContent=x.latest_ftd_rows??"—";changes.textContent=`${x.universe_additions??0} / ${x.universe_removals??0}`;equity.textContent=`${(x.paper_performance?.ending_equity??100).toFixed(2)}`;paper.textContent=x.paper_performance?.trade_count?`${((x.paper_performance.win_rate??0)*100).toFixed(1)}% / ${x.paper_performance.trade_count}`:"Unproven / 0";time.textContent=new Date(x.generated_at).toLocaleString();message.textContent=x.message;gates.innerHTML=x.evidence.map(e=>`<tr><td>${e.stage}</td><td class="${e.status}">${e.status}</td><td>${e.reason}</td></tr>`).join('')}).catch(()=>{status.textContent='AWAITING FIRST RUN';message.textContent='The scheduled cloud pipeline has not published its first manifest yet.'})</script></body></html>
+<script>
+const el=id=>document.getElementById(id);
+fetch('./data/latest.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`manifest ${r.status}`);return r.json()}).then(x=>{
+  el('status').textContent=x.status;
+  el('rows').textContent=x.universe_rows_current;
+  el('opps').textContent=x.opportunities.length;
+  el('filings').textContent=x.recent_target_filings??'—';
+  el('ftd').textContent=x.latest_ftd_rows??'—';
+  el('changes').textContent=`${x.universe_additions??0} / ${x.universe_removals??0}`;
+  el('equity').textContent=(x.paper_performance?.ending_equity??100).toFixed(2);
+  el('paper').textContent=x.paper_performance?.trade_count?`${((x.paper_performance.win_rate??0)*100).toFixed(1)}% / ${x.paper_performance.trade_count}`:'Unproven / 0';
+  el('time').textContent=new Date(x.generated_at).toLocaleString();
+  el('message').textContent=x.message;
+  const body=el('gates');
+  body.replaceChildren(...x.evidence.map(e=>{
+    const row=document.createElement('tr');
+    for(const value of [e.stage,e.status,e.reason]){const cell=document.createElement('td');cell.textContent=value;row.appendChild(cell)}
+    row.children[1].className=e.status;
+    return row;
+  }));
+}).catch(()=>{
+  el('status').textContent='AWAITING FIRST RUN';
+  el('message').textContent='The scheduled cloud pipeline has not published its first manifest yet.';
+});
+</script></body></html>
