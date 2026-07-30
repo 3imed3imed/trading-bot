@@ -1,0 +1,48 @@
+{
+  "schema_version": "2.0.0",
+  "generated_at": "2026-07-30T07:03:16.726649+00:00",
+  "mode": "FIXTURE_SMOKE",
+  "source_hash": "f6fe897047dc299a8ea1ea8e05defbf48d1b38230f32909db21144e64edbf852",
+  "stages": {
+    "market_data": {
+      "status": "PASS",
+      "reason": "received 1 IEX snapshots",
+      "evidence": [
+        "f6fe897047dc299a8ea1ea8e05defbf48d1b38230f32909db21144e64edbf852"
+      ]
+    },
+    "universe": {
+      "status": "PASS",
+      "reason": "1 symbols satisfy price policy",
+      "evidence": [
+        "SNDL"
+      ]
+    },
+    "candidate_signal": {
+      "status": "REJECTED",
+      "reason": "0 deterministic research candidates",
+      "evidence": []
+    },
+    "execution_feasibility": {
+      "status": "BLOCKED",
+      "reason": "upstream gates did not pass: candidate_signal",
+      "evidence": []
+    }
+  },
+  "promotion": {
+    "status": "REJECTED",
+    "reason": "missing=[]; failed=['candidate_signal', 'execution_feasibility']"
+  },
+  "candidates": [
+    {
+      "symbol": "SNDL",
+      "price": 1.195,
+      "daily_return": -0.012396694214875992,
+      "candidate": false
+    }
+  ],
+  "fill_estimates": [],
+  "orders_submitted": 0,
+  "live_orders_enabled": false,
+  "accepted_for_order_submission": false
+}
