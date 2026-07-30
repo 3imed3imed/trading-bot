@@ -1,0 +1,32 @@
+{
+  "schema_version": "2.0.0",
+  "generated_at": "2026-07-30T07:38:00+00:00",
+  "market_observed_at": "2026-07-29T20:01:00.072667+00:00",
+  "mode": "CONNECTED_ALPACA_IEX_SNAPSHOT",
+  "feed": "iex",
+  "stages": {
+    "market_data": {"status": "PASS", "reason": "Received authenticated Alpaca IEX trade, quote, minute and daily bars", "evidence": ["SNDL"]},
+    "universe": {"status": "PASS", "reason": "SNDL satisfies configured $0.10-$5 price policy", "evidence": ["SNDL"]},
+    "candidate_signal": {"status": "REJECTED", "reason": "Daily return -1.2397% is below configured +3% observation threshold", "evidence": []},
+    "execution_feasibility": {"status": "BLOCKED", "reason": "No candidate signal; no order may be evaluated", "evidence": []}
+  },
+  "promotion": {"status": "REJECTED", "reason": "Candidate and scientific validation gates did not pass"},
+  "candidates": [{
+    "symbol": "SNDL",
+    "price": 1.195,
+    "bid": 1.18,
+    "ask": 1.20,
+    "bid_size": 600,
+    "ask_size": 600,
+    "spread_bps": 168.0672,
+    "minute_volume": 3266,
+    "daily_volume": 107357,
+    "daily_return": -0.0123966942,
+    "candidate": false,
+    "classification": "CURRENT_IEX_OBSERVATION",
+    "tradable": false
+  }],
+  "orders_submitted": 0,
+  "live_orders_enabled": false,
+  "accepted_for_order_submission": false
+}
