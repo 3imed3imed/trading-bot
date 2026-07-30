@@ -1,5 +1,8 @@
 {
-  "schema_version": "1.1.0",
+  "schema_version": "1.2.0",
+  "market_data_provider": "alpaca_iex",
+  "execution_broker": "interactive_brokers",
+  "execution_mode": "paper",
   "feed": "iex",
   "symbols": ["SNDL"],
   "price_ceiling": 5.0,
