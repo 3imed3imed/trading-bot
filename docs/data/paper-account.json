@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-08-18T22:26:55.418339+00:00",
+  "generated_at": "2026-08-19T22:27:09.301436+00:00",
   "mode": "IBKR_PAPER_SESSION",
   "connection": "BLOCKED",
   "reason": "An authenticated HTTPS IBKR Client Portal Gateway is not configured",
