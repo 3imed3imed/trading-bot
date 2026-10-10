@@ -1,17 +1,17 @@
 {
   "schema_version": "1.1.0",
-  "run_id": "37873275463",
-  "generated_at": "2026-10-09T02:10:29.633564+00:00",
-  "code_commit": "dc52d90fd2070124fb73f8d0af52b428208513b3",
+  "run_id": "38014378499",
+  "generated_at": "2026-10-10T01:45:30.501206+00:00",
+  "code_commit": "c80d6f4d72c75b75d68bb35a56cade6f3cae3cea",
   "policy_hash": "4fa1b63b8f4b34b5a689fcec7e6d6f218b16dc74a89221a9f443a5f91a871077",
   "status": "REJECTED",
   "live_execution_enabled": false,
-  "universe_rows_current": 6547,
+  "universe_rows_current": 6548,
   "recent_target_filings": 0,
   "latest_ftd_rows": 0,
   "sub5_ftd_reference_rows": 0,
-  "universe_additions": 3,
-  "universe_removals": 0,
+  "universe_additions": 4,
+  "universe_removals": 3,
   "paper_performance": {
     "status": "INSUFFICIENT_OR_UNPROVEN",
     "trade_count": 0,
@@ -36,8 +36,8 @@
       "status": "PASS",
       "reason": "Authoritative current listing snapshot collected",
       "source": "https://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt",
-      "content_hash": "9fd8af1f03c54fa181a811f1872514870532cefcc2b9753649c7322830a87206",
-      "observed_at": "2026-10-09T02:10:15.940514+00:00",
+      "content_hash": "59e7857c5b9da15c22497ff61eb50a5915494df4116e31d62c5b0597368f4d13",
+      "observed_at": "2026-10-10T01:45:16.436007+00:00",
       "rows": 5630
     },
     {
@@ -45,9 +45,9 @@
       "status": "PASS",
       "reason": "Authoritative current listing snapshot collected",
       "source": "https://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt",
-      "content_hash": "32fda6e34876f4e364937c1dbe2323165beffece9d5da10d1eec32745d10efc3",
-      "observed_at": "2026-10-09T02:10:15.940514+00:00",
-      "rows": 7663
+      "content_hash": "364bcfd132023f2b2c49ec5dda7dc7b18eade4249a3b4bbd5fef4a70cc614752",
+      "observed_at": "2026-10-10T01:45:16.436007+00:00",
+      "rows": 7667
     },
     {
       "stage": "point_in_time_universe",
@@ -70,7 +70,7 @@
     {
       "stage": "prospective_universe_changes",
       "status": "PASS",
-      "reason": "Compared snapshots: 3 additions and 0 removals",
+      "reason": "Compared snapshots: 4 additions and 3 removals",
       "source": null,
       "content_hash": null,
       "observed_at": null,
@@ -82,7 +82,7 @@
       "reason": "Collection error: HTTPError",
       "source": "https://www.sec.gov/files/company_tickers.json",
       "content_hash": null,
-      "observed_at": "2026-10-09T02:10:25.480286+00:00",
+      "observed_at": "2026-10-10T01:45:26.323423+00:00",
       "rows": null
     },
     {
@@ -91,7 +91,7 @@
       "reason": "Collection error: HTTPError",
       "source": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&output=atom&count=100",
       "content_hash": null,
-      "observed_at": "2026-10-09T02:10:17.073233+00:00",
+      "observed_at": "2026-10-10T01:45:18.194146+00:00",
       "rows": null
     },
     {
@@ -100,7 +100,7 @@
       "reason": "Collection error: HTTPError",
       "source": "https://www.sec.gov/data-research/sec-markets-data/fails-deliver-data",
       "content_hash": null,
-      "observed_at": "2026-10-09T02:10:21.224687+00:00",
+      "observed_at": "2026-10-10T01:45:22.246331+00:00",
       "rows": null
     },
     {
